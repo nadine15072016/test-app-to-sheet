@@ -1984,7 +1984,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         // Kirim data ke Supabase
                         (async () => {
                                 const { data: insertData, error } = await supabase
-                                    .from('padi_sawah')
+                                    .from('input_harian')
                                     .insert([
                                         {
                                             tanggal,
