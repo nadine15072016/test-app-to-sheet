@@ -1120,6 +1120,49 @@ tfoot td {
                     </div>
                 </form>
             </div>
+            <!-- Supabase JS Library -->
+            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+            <script>
+            // Setup Supabase client
+            const supabaseUrl = 'https://rvibhulolxrbhdmjtuxk.supabase.co';
+            const supabaseKey = 'sb_publishable_DzeTd8qe0Um1PbI3tOlVsw_JuTzaluv';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // Kirim data input ke Supabase
+            document.getElementById('inputForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                var tanggal = document.getElementById('tanggal').value;
+                var luasPanen = document.getElementById('luasPanen').value;
+                var lahanBera = document.getElementById('lahanBera').value;
+                var lahanOlahTanah = document.getElementById('lahanOlahTanah').value;
+                var luasTambahTanam = document.getElementById('luasTambahTanam').value;
+                var gagalPanen = document.getElementById('gagalPanen').checked;
+                var alasanGagalPanen = document.getElementById('alasanGagalPanen').value;
+                var tundaTanam = document.getElementById('tundaTanam').checked;
+                var alasanTundaTanam = document.getElementById('alasanTundaTanam').value;
+                var tanggalTanamBaru = document.getElementById('tanggalTanamBaru').value;
+                // Siapkan data
+                var data = {
+                    tanggal: tanggal,
+                    luasPanen: luasPanen,
+                    lahanBera: lahanBera,
+                    lahanOlahTanah: lahanOlahTanah,
+                    luasTambahTanam: luasTambahTanam,
+                    gagalPanen: gagalPanen,
+                    alasanGagalPanen: alasanGagalPanen,
+                    tundaTanam: tundaTanam,
+                    alasanTundaTanam: alasanTundaTanam,
+                    tanggalTanamBaru: tanggalTanamBaru
+                };
+                // Insert ke tabel Supabase (misal: input_harian)
+                const { error } = await supabase.from('input_harian').insert([data]);
+                if (!error) {
+                    showToast('Data berhasil disimpan ke Supabase!', 'success');
+                } else {
+                    showToast('Gagal simpan data ke Supabase: ' + error.message, 'error');
+                }
+            });
+            </script>
             <script>
             // Kirim data input ke Google Sheets via Apps Script Web App
             document.getElementById('inputForm').addEventListener('submit', function(e) {
