@@ -1134,6 +1134,61 @@ tfoot td {
             <div class="table-section">
                                 <div id="lokasiInfoTabel" style="font-size:13px;color:#555;margin-bottom:8px;font-weight:500;"></div>
                 <h2>Laporan Data dan Prediksi</h2>
+                <button id="syncAllToSupabase" class="btn btn-primary" style="margin-bottom:12px;">⬆️ Kirim Semua ke Supabase</button>
+                <script>
+                // Fungsi untuk mengambil seluruh data dari tabel laporan dan mengirim ke Supabase
+                document.getElementById('syncAllToSupabase').addEventListener('click', async function() {
+                    const table = document.querySelector('.table-section table');
+                    if (!table) {
+                        showToast('Tabel data tidak ditemukan!', 'error');
+                        return;
+                    }
+                    const rows = Array.from(table.querySelectorAll('tbody tr'));
+                    if (rows.length === 0) {
+                        showToast('Tidak ada data untuk dikirim!', 'warning');
+                        return;
+                    }
+                    // Mapping kolom sesuai urutan tabel Anda
+                    const dataToSend = rows.map(row => {
+                        const cells = row.querySelectorAll('td');
+                        return {
+                            tanggal: cells[0]?.innerText.trim() || null,
+                            luasPanen: parseFloat(cells[1]?.innerText) || 0,
+                            lahanBera: parseFloat(cells[2]?.innerText) || 0,
+                            lahanOlahTanah: parseFloat(cells[3]?.innerText) || 0,
+                            luasTambahTanam: parseFloat(cells[4]?.innerText) || 0,
+                            gagalPanen: (cells[5]?.innerText.trim().toLowerCase() === 'ya'),
+                            alasanGagalPanen: cells[6]?.innerText.trim() || null,
+                            tundaTanam: (cells[7]?.innerText.trim().toLowerCase() === 'ya'),
+                            alasanTundaTanam: cells[8]?.innerText.trim() || null,
+                            tanggalTanamBaru: cells[9]?.innerText.trim() || null
+                        };
+                    });
+                    // Filter data yang punya tanggal
+                    const filteredData = dataToSend.filter(d => d.tanggal);
+                    if (filteredData.length === 0) {
+                        showToast('Tidak ada data valid untuk dikirim!', 'warning');
+                        return;
+                    }
+                    // Kirim batch insert ke Supabase
+                    const { error } = await supabase
+                        .from('input_harian')
+                        .insert(filteredData);
+                    if (error) {
+                        let detailMsg = error.message;
+                        if (error.details) detailMsg += ' | ' + error.details;
+                        if (error.hint) detailMsg += ' | Hint: ' + error.hint;
+                        showToast('Gagal kirim ke Supabase: ' + detailMsg, 'error');
+                        const debugEl = document.getElementById('debugErrors');
+                        if (debugEl) {
+                            debugEl.style.display = 'block';
+                            debugEl.textContent = '[Supabase Error] ' + detailMsg;
+                        }
+                    } else {
+                        showToast('Seluruh data berhasil dikirim ke Supabase!', 'success');
+                    }
+                });
+                </script>
                 <!-- Lokasi input fields removed from here -->
                 <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center;">
                     <button id="undoBtn" class="btn btn-secondary" style="padding:6px 16px;">↩️ Undo</button>
