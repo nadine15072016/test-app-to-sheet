@@ -901,6 +901,15 @@ tfoot td {
         filter: brightness(1.15) drop-shadow(0 0 8px #2ecc71cc);
     }
     </style>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script>
+    // Inisialisasi Supabase
+    const supabaseUrl = 'https://rvibhulolxrbhdmjtuxk.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2aWJodWxvbHhyYmhkbWp0dXhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjcyNzIsImV4cCI6MjA4NzM0MzI3Mn0.ds01XK_vit8R5Ycc6h9gykAX7TTnUzxnIuFwz_Rd5fE';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+</style>
 </head>
 <body>
         <script>
@@ -1120,94 +1129,6 @@ tfoot td {
                     </div>
                 </form>
             </div>
-            <!-- Supabase JS Library -->
-            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
-            <script>
-            // Setup Supabase client
-            const supabaseUrl = 'https://rvibhulolxrbhdmjtuxk.supabase.co';
-            const supabaseKey = 'sb_publishable_DzeTd8qe0Um1PbI3tOlVsw_JuTzaluv';
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-            // Kirim data input ke Supabase
-            document.getElementById('inputForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                var tanggal = document.getElementById('tanggal').value;
-                var luasPanen = document.getElementById('luasPanen').value;
-                var lahanBera = document.getElementById('lahanBera').value;
-                var lahanOlahTanah = document.getElementById('lahanOlahTanah').value;
-                var luasTambahTanam = document.getElementById('luasTambahTanam').value;
-                var gagalPanen = document.getElementById('gagalPanen').checked;
-                var alasanGagalPanen = document.getElementById('alasanGagalPanen').value;
-                var tundaTanam = document.getElementById('tundaTanam').checked;
-                var alasanTundaTanam = document.getElementById('alasanTundaTanam').value;
-                var tanggalTanamBaru = document.getElementById('tanggalTanamBaru').value;
-                // Siapkan data
-                var data = {
-                    tanggal: tanggal,
-                    luasPanen: luasPanen,
-                    lahanBera: lahanBera,
-                    lahanOlahTanah: lahanOlahTanah,
-                    luasTambahTanam: luasTambahTanam,
-                    gagalPanen: gagalPanen,
-                    alasanGagalPanen: alasanGagalPanen,
-                    tundaTanam: tundaTanam,
-                    alasanTundaTanam: alasanTundaTanam,
-                    tanggalTanamBaru: tanggalTanamBaru
-                };
-                // Insert ke tabel Supabase (misal: input_harian)
-                const { error } = await supabase.from('input_harian').insert([data]);
-                if (!error) {
-                    showToast('Data berhasil disimpan ke Supabase!', 'success');
-                } else {
-                    showToast('Gagal simpan data ke Supabase: ' + error.message, 'error');
-                }
-            });
-            </script>
-            <script>
-            // Kirim data input ke Google Sheets via Apps Script Web App
-            document.getElementById('inputForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                // Ambil data dari form
-                var tanggal = document.getElementById('tanggal').value;
-                var luasPanen = document.getElementById('luasPanen').value;
-                var lahanBera = document.getElementById('lahanBera').value;
-                var lahanOlahTanah = document.getElementById('lahanOlahTanah').value;
-                var luasTambahTanam = document.getElementById('luasTambahTanam').value;
-                var gagalPanen = document.getElementById('gagalPanen').checked;
-                var alasanGagalPanen = document.getElementById('alasanGagalPanen').value;
-                var tundaTanam = document.getElementById('tundaTanam').checked;
-                var alasanTundaTanam = document.getElementById('alasanTundaTanam').value;
-                var tanggalTanamBaru = document.getElementById('tanggalTanamBaru').value;
-                // Siapkan data
-                var data = {
-                    tanggal: tanggal,
-                    luasPanen: luasPanen,
-                    lahanBera: lahanBera,
-                    lahanOlahTanah: lahanOlahTanah,
-                    luasTambahTanam: luasTambahTanam,
-                    gagalPanen: gagalPanen,
-                    alasanGagalPanen: alasanGagalPanen,
-                    tundaTanam: tundaTanam,
-                    alasanTundaTanam: alasanTundaTanam,
-                    tanggalTanamBaru: tanggalTanamBaru
-                };
-                fetch('https://script.google.com/macros/s/AKfycbxJr5CcOJkbzvybKVkPsUcDYzPMnNAcGy0SmYgakTsYvNtBfL9UXT3UAk28jSskOJwc/exec', {
-                    method: 'POST',
-                    body: JSON.stringify(data),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.text())
-                .then(result => {
-                    // Tampilkan notifikasi sukses
-                    showToast('Data berhasil dikirim ke Google Sheets!', 'success');
-                })
-                .catch(error => {
-                    showToast('Gagal kirim data ke Google Sheets!', 'error');
-                });
-            });
-            </script>
 
             <!-- Table Section -->
             <div class="table-section">
@@ -2015,8 +1936,8 @@ document.addEventListener('DOMContentLoaded', function(){
         });
 
         function saveData() {
-              // Deklarasi notifLog
-              let notifLog = [];
+            // Deklarasi notifLog
+            let notifLog = [];
             // --- VALIDASI LANJUTAN DATA ---
             const tanggal = document.getElementById('tanggal').value;
             // Validasi format tanggal
@@ -2060,32 +1981,31 @@ document.addEventListener('DOMContentLoaded', function(){
                 showToast('Alasan tunda tanam dan tanggal tanam baru wajib diisi dengan format benar.', 'error');
                 return;
             }
-            // ...existing code...
-                 const file = event && event.target && event.target.files ? event.target.files[0] : undefined;
-                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            const json = JSON.parse(e.target.result);
-                            if (json.padiSawahData && json.padiSawahTargets) {
-                                localStorage.setItem('padiSawahData', json.padiSawahData);
-                                localStorage.setItem('padiSawahTargets', json.padiSawahTargets);
-                                syncDataStore();
-                                showToast('Data berhasil direstore!', 'success');
-                                renderTable();
-                                updateStats();
-                                populateFilters();
-                            } else {
-                                alert('File backup tidak valid.');
-                            }
-                        } catch (err) {
-                            alert('Gagal membaca file backup: ' + err);
-                        }
-                    };
-                    reader.readAsText(file);
-                    // Reset input agar bisa upload file yang sama lagi jika perlu
-                    event.target.value = '';
-                    }
+                        // Kirim data ke Supabase
+                        (async () => {
+                                const { data: insertData, error } = await supabase
+                                    .from('padi_sawah')
+                                    .insert([
+                                        {
+                                            tanggal,
+                                            luas_panen: luasPanen,
+                                            lahan_bera: lahanBera,
+                                            lahan_olah_tanah: lahanOlahTanah,
+                                            luas_tambah_tanam: luasTambahTanam,
+                                            gagal_panen: gagalPanen,
+                                            tunda_tanam: tundaTanam,
+                                            tanggal_tanam_baru: tanggalTanamBaru || null,
+                                            alasan_gagal_panen: alasanGagalPanen || null,
+                                            alasan_tunda_tanam: alasanTundaTanam || null,
+                                            timestamp: new Date().toISOString()
+                                        }
+                                    ]);
+                                if (error) {
+                                    showToast('Gagal simpan ke Supabase: ' + error.message, 'error');
+                                } else {
+                                    showToast('Data juga dikirim ke Supabase!', 'success');
+                                }
+                        })();
                 const pred = calculatePredictions(tanggal);
                 if (pred.luasPanen > 0 || pred.lahanBera > 0 || pred.lahanOlahTanah > 0 || pred.luasTambahTanam > 0) {
                 notifLog.push({
@@ -2101,7 +2021,7 @@ document.addEventListener('DOMContentLoaded', function(){
             }
             localStorage.setItem('padiSawahNotifLog', JSON.stringify(notifLog));
             // Notifikasi khusus jika tanggal hari ini
-                // Update dataStore dengan data input
+                // Update dataStore dengan data input (tetap simpan lokal)
                 dataStore[tanggal] = {
                     luasPanen,
                     lahanBera,
