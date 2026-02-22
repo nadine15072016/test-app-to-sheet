@@ -2001,7 +2001,16 @@ document.addEventListener('DOMContentLoaded', function(){
                                         }
                                     ]);
                                 if (error) {
-                                    showToast('Gagal simpan ke Supabase: ' + error.message, 'error');
+                                    let detailMsg = error.message;
+                                    if (error.details) detailMsg += ' | ' + error.details;
+                                    if (error.hint) detailMsg += ' | Hint: ' + error.hint;
+                                    // Tampilkan error di toast dan debug area jika ada
+                                    showToast('Gagal simpan ke Supabase: ' + detailMsg, 'error');
+                                    const debugEl = document.getElementById('debugErrors');
+                                    if (debugEl) {
+                                        debugEl.style.display = 'block';
+                                        debugEl.textContent = '[Supabase Error] ' + detailMsg;
+                                    }
                                 } else {
                                     showToast('Data juga dikirim ke Supabase!', 'success');
                                 }
