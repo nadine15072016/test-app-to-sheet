@@ -42,23 +42,21 @@
             };
             // Pastikan tidak ada undefined
             Object.keys(obj).forEach(k => { if (obj[k] === undefined) obj[k] = null; });
-            data.push(obj);
+            // Validasi: tanggal valid dan minimal satu numerik valid
+            if (obj.tanggal && [
+                obj.panen_real,
+                obj.panen_prediksi,
+                obj.bera_real,
+                obj.bera_prediksi,
+                obj.olah_real,
+                obj.olah_prediksi,
+                obj.tanam_real,
+                obj.tanam_prediksi
+            ].some(v => typeof v === 'number' && !isNaN(v))) {
+                data.push(obj);
+            }
         });
-        // Hanya kirim baris dengan tanggal valid dan minimal satu nilai numerik (null/NaN diabaikan, 0 valid)
-        return data.filter(d => {
-            if (!d.tanggal) return false;
-            // Cek minimal satu kolom numerik valid (bukan null/NaN)
-            return [
-                d.panen_real,
-                d.panen_prediksi,
-                d.bera_real,
-                d.bera_prediksi,
-                d.olah_real,
-                d.olah_prediksi,
-                d.tanam_real,
-                d.tanam_prediksi
-            ].some(v => typeof v === 'number' && !isNaN(v));
-        });
+        return data;
     }
     // Fungsi placeholder kirim ke Supabase
     function sendToSupabase(data) {
@@ -76,9 +74,9 @@
                 'Content-Type': 'application/json',
                 'apikey': apiKey,
                 'Authorization': 'Bearer ' + apiKey,
-                'Prefer': 'return=representation' // agar Supabase mengembalikan data yang diinsert
+                'Prefer': 'return=representation'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(filteredData)
         })
         .then(async res => {
             let result;
@@ -88,14 +86,14 @@
                 result = {};
             }
             console.log('Supabase response:', res.status, result);
-            if (!res.ok || result && result.code) {
+            if (!res.ok || (result && (result.code || result.error))) {
                 // Jika Supabase mengembalikan error
-                let msg = (result && result.message) ? result.message : 'Gagal insert ke Supabase.';
+                let msg = (result && (result.message || result.error)) ? (result.message || result.error) : 'Gagal insert ke Supabase.';
                 showToast('Gagal kirim ke Supabase: ' + msg, 'error');
             } else if (Array.isArray(result) && result.length > 0) {
                 showToast('Data berhasil dikirim ke Supabase!', 'success');
             } else {
-                showToast('Tidak ada data yang masuk ke Supabase.', 'warning');
+                showToast('Tidak ada data yang masuk ke Supabase. Cek data, constraint, atau duplikat.', 'warning');
             }
         })
         .catch(err => {
