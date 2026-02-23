@@ -10,8 +10,9 @@
             // Helper: konversi string ke number/null
             function parseNum(val) {
                 if (val === undefined || val === null) return null;
-                val = val.trim();
-                if (val === '-' || val === '') return null;
+                val = String(val).trim();
+                // Jika mengandung karakter selain angka, titik, minus di depan, atau kosong, return null
+                if (val === '' || val === '-' || !/^(-?\d+(\.\d+)?)$/.test(val)) return null;
                 const num = parseFloat(val.replace(/,/g, '.'));
                 return isNaN(num) ? null : num;
             }
