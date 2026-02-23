@@ -1,3 +1,64 @@
+    <script>
+    // Fungsi ambil data dari tabel laporan
+    function getTableData() {
+        const table = document.getElementById('dataTable');
+        const rows = table.querySelectorAll('tbody tr');
+        const data = [];
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length < 11) return;
+            data.push({
+                tanggal: cells[0].innerText.trim(),
+                panen_real: cells[1].innerText.trim(),
+                panen_prediksi: cells[2].innerText.trim(),
+                bera_real: cells[3].innerText.trim(),
+                bera_prediksi: cells[4].innerText.trim(),
+                olah_real: cells[5].innerText.trim(),
+                olah_prediksi: cells[6].innerText.trim(),
+                tanam_real: cells[7].innerText.trim(),
+                tanam_prediksi: cells[8].innerText.trim(),
+                keterangan: cells[9].innerText.trim()
+            });
+        });
+        return data;
+    }
+    // Event listener tombol kirim ke Supabase
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('sendSupabaseBtn');
+        if (btn) {
+            btn.addEventListener('click', function() {
+                const data = getTableData();
+                // Panggil fungsi kirim ke Supabase di sini
+                sendToSupabase(data);
+            });
+        }
+    });
+    // Fungsi placeholder kirim ke Supabase
+    function sendToSupabase(data) {
+        // Kirim data ke Supabase
+        const url = 'https://rvibhulolxrbhdmjtuxk.supabase.co/rest/v1/laporan_padi_sawah';
+        const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2aWJodWxvbHhyYmhkbWp0dXhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjcyNzIsImV4cCI6MjA4NzM0MzI3Mn0.ds01XK_vit8R5Ycc6h9gykAX7TTnUzxnIuFwz_Rd5fE';
+        // Kirim semua data sekaligus (bulk insert)
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': apiKey,
+                'Authorization': 'Bearer ' + apiKey
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            showToast('Data berhasil dikirim ke Supabase!', 'success');
+            console.log('Supabase result:', result);
+        })
+        .catch(err => {
+            showToast('Gagal kirim ke Supabase: ' + err, 'error');
+            console.error('Supabase error:', err);
+        });
+    }
+    </script>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -901,15 +962,6 @@ tfoot td {
         filter: brightness(1.15) drop-shadow(0 0 8px #2ecc71cc);
     }
     </style>
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
-    <script>
-    // Inisialisasi Supabase
-    const supabaseUrl = 'https://rvibhulolxrbhdmjtuxk.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2aWJodWxvbHhyYmhkbWp0dXhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjcyNzIsImV4cCI6MjA4NzM0MzI3Mn0.ds01XK_vit8R5Ycc6h9gykAX7TTnUzxnIuFwz_Rd5fE';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    </script>
-</style>
 </head>
 <body>
         <script>
@@ -1134,95 +1186,6 @@ tfoot td {
             <div class="table-section">
                                 <div id="lokasiInfoTabel" style="font-size:13px;color:#555;margin-bottom:8px;font-weight:500;"></div>
                 <h2>Laporan Data dan Prediksi</h2>
-                <button id="syncAllToSupabase" class="btn btn-primary" style="margin-bottom:12px;">⬆️ Kirim Semua ke Supabase</button>
-                <script>
-                // Fungsi untuk mengambil seluruh data dari tabel laporan dan mengirim ke Supabase
-                document.getElementById('syncAllToSupabase').addEventListener('click', async function() {
-                    const table = document.querySelector('.table-section table');
-                    if (!table) {
-                        showToast('Tabel data tidak ditemukan!', 'error');
-                        return;
-                    }
-                    const rows = Array.from(table.querySelectorAll('tbody tr'));
-                    if (rows.length === 0) {
-                        showToast('Tidak ada data untuk dikirim!', 'warning');
-                        return;
-                    }
-                    // Mapping kolom sesuai urutan tabel Anda
-                    function parseTanggalToYMD(str) {
-                        // Contoh input: "Minggu, 01-Feb-2026" atau "Senin, 12-Des-2025" atau sudah YYYY-MM-DD
-                        if (!str) return null;
-                        str = str.trim();
-                        // Jika sudah format YYYY-MM-DD
-                        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-                        // Ambil bagian tanggal saja
-                        let t = str.split(',').pop().trim(); // "01-Feb-2026"
-                        // Ubah nama bulan ke angka
-                        const bulanMap = {
-                            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'Mei': '05', 'Jun': '06',
-                            'Jul': '07', 'Agu': '08', 'Sep': '09', 'Okt': '10', 'Nov': '11', 'Des': '12'
-                        };
-                        const m = t.match(/(\d{2})-([A-Za-z]+)-(\d{4})/);
-                        if (!m) return null;
-                        const [_, dd, mon, yyyy] = m;
-                        const mm = bulanMap[mon.slice(0,3)] || null;
-                        if (!mm) return null;
-                        // Validasi tanggal
-                        const ymd = `${yyyy}-${mm}-${dd}`;
-                        if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return null;
-                        return ymd;
-                    }
-                    const dataToSend = rows.map(row => {
-                        const cells = row.querySelectorAll('td');
-                        // Ambil tanggal dari kolom pertama (format ke YYYY-MM-DD)
-                        const tanggal = parseTanggalToYMD(cells[0]?.innerText.trim());
-                        // Ambil data dari dataStore (karena field boolean/alasan tidak ada di tabel)
-                        const store = window.dataStore || {};
-                        const rawDate = cells[0]?.innerText.trim();
-                        // Cari key di dataStore yang cocok dengan tanggal (format YYYY-MM-DD)
-                        let key = null;
-                        for (const k in store) {
-                            if (formatDate(k) === rawDate || k === tanggal) { key = k; break; }
-                        }
-                        const d = key ? store[key] : {};
-                        return {
-                            tanggal,
-                            luasPanen: d.luasPanen || 0,
-                            lahanBera: d.lahanBera || 0,
-                            lahanOlahTanah: d.lahanOlahTanah || 0,
-                            luasTambahTanam: d.luasTambahTanam || 0,
-                            gagalPanen: d.gagalPanen || false,
-                            alasanGagalPanen: d.alasanGagalPanen || null,
-                            tundaTanam: d.tundaTanam || false,
-                            alasanTundaTanam: d.alasanTundaTanam || null,
-                            tanggalTanamBaru: d.tanggalTanamBaru || null
-                        };
-                    });
-                    // Filter data yang punya tanggal
-                    const filteredData = dataToSend.filter(d => d.tanggal && /^\d{4}-\d{2}-\d{2}$/.test(d.tanggal));
-                    if (filteredData.length === 0) {
-                        showToast('Tidak ada data valid untuk dikirim!', 'warning');
-                        return;
-                    }
-                    // Kirim batch insert ke Supabase
-                    const { error } = await supabase
-                        .from('input_harian')
-                        .insert(filteredData);
-                    if (error) {
-                        let detailMsg = error.message;
-                        if (error.details) detailMsg += ' | ' + error.details;
-                        if (error.hint) detailMsg += ' | Hint: ' + error.hint;
-                        showToast('Gagal kirim ke Supabase: ' + detailMsg, 'error');
-                        const debugEl = document.getElementById('debugErrors');
-                        if (debugEl) {
-                            debugEl.style.display = 'block';
-                            debugEl.textContent = '[Supabase Error] ' + detailMsg;
-                        }
-                    } else {
-                        showToast('Seluruh data berhasil dikirim ke Supabase!', 'success');
-                    }
-                });
-                </script>
                 <!-- Lokasi input fields removed from here -->
                 <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center;">
                     <button id="undoBtn" class="btn btn-secondary" style="padding:6px 16px;">↩️ Undo</button>
@@ -1312,6 +1275,7 @@ tfoot td {
                     </div>
                 </div>
                                 <div class="legend-prediksi-wrapper" style="width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:8px;">
+                                    <button id="sendSupabaseBtn" class="btn btn-primary" style="margin-bottom:12px;padding:6px 16px;background:#2d8cff;color:#fff;">🔄 Sinkronisasi Data Online</button>
                                     <div class="legend-prediksi-desc" style="font-size:13px;color:#444;line-height:1.5;margin-bottom:4px;">
                                         <b>Legenda:</b> Warna pada kolom prediksi menandai fase siklus utama. Warna tetap muncul pada seluruh rentang siklus meskipun nilai prediksi 0.
                                     </div>
@@ -2025,8 +1989,8 @@ document.addEventListener('DOMContentLoaded', function(){
         });
 
         function saveData() {
-            // Deklarasi notifLog
-            let notifLog = [];
+              // Deklarasi notifLog
+              let notifLog = [];
             // --- VALIDASI LANJUTAN DATA ---
             const tanggal = document.getElementById('tanggal').value;
             // Validasi format tanggal
@@ -2070,39 +2034,32 @@ document.addEventListener('DOMContentLoaded', function(){
                 showToast('Alasan tunda tanam dan tanggal tanam baru wajib diisi dengan format benar.', 'error');
                 return;
             }
-                        // Kirim data ke Supabase
-                        (async () => {
-                                const { data: insertData, error } = await supabase
-                                    .from('input_harian')
-                                    .insert([
-                                        {
-                                            tanggal,
-                                            luasPanen,
-                                            lahanBera,
-                                            lahanOlahTanah,
-                                            luasTambahTanam,
-                                            gagalPanen,
-                                            tundaTanam,
-                                            tanggalTanamBaru: tanggalTanamBaru || null,
-                                            alasanGagalPanen: alasanGagalPanen || null,
-                                            alasanTundaTanam: alasanTundaTanam || null
-                                        }
-                                    ]);
-                                if (error) {
-                                    let detailMsg = error.message;
-                                    if (error.details) detailMsg += ' | ' + error.details;
-                                    if (error.hint) detailMsg += ' | Hint: ' + error.hint;
-                                    // Tampilkan error di toast dan debug area jika ada
-                                    showToast('Gagal simpan ke Supabase: ' + detailMsg, 'error');
-                                    const debugEl = document.getElementById('debugErrors');
-                                    if (debugEl) {
-                                        debugEl.style.display = 'block';
-                                        debugEl.textContent = '[Supabase Error] ' + detailMsg;
-                                    }
-                                } else {
-                                    showToast('Data juga dikirim ke Supabase!', 'success');
-                                }
-                        })();
+            // ...existing code...
+                 const file = event && event.target && event.target.files ? event.target.files[0] : undefined;
+                 if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const json = JSON.parse(e.target.result);
+                            if (json.padiSawahData && json.padiSawahTargets) {
+                                localStorage.setItem('padiSawahData', json.padiSawahData);
+                                localStorage.setItem('padiSawahTargets', json.padiSawahTargets);
+                                syncDataStore();
+                                showToast('Data berhasil direstore!', 'success');
+                                renderTable();
+                                updateStats();
+                                populateFilters();
+                            } else {
+                                alert('File backup tidak valid.');
+                            }
+                        } catch (err) {
+                            alert('Gagal membaca file backup: ' + err);
+                        }
+                    };
+                    reader.readAsText(file);
+                    // Reset input agar bisa upload file yang sama lagi jika perlu
+                    event.target.value = '';
+                    }
                 const pred = calculatePredictions(tanggal);
                 if (pred.luasPanen > 0 || pred.lahanBera > 0 || pred.lahanOlahTanah > 0 || pred.luasTambahTanam > 0) {
                 notifLog.push({
@@ -2118,7 +2075,7 @@ document.addEventListener('DOMContentLoaded', function(){
             }
             localStorage.setItem('padiSawahNotifLog', JSON.stringify(notifLog));
             // Notifikasi khusus jika tanggal hari ini
-                // Update dataStore dengan data input (tetap simpan lokal)
+                // Update dataStore dengan data input
                 dataStore[tanggal] = {
                     luasPanen,
                     lahanBera,
