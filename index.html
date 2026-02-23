@@ -38,20 +38,20 @@
             });
         });
         // Filter hanya data dengan tanggal valid
-        // Hanya kirim baris dengan tanggal valid dan minimal satu nilai numerik
+        // Hanya kirim baris dengan tanggal valid dan minimal satu nilai numerik (null/NaN diabaikan, 0 valid)
         return data.filter(d => {
             if (!d.tanggal) return false;
-            // Cek minimal satu kolom numerik tidak null
-            return (
-                d.panen_real !== null ||
-                d.panen_prediksi !== null ||
-                d.bera_real !== null ||
-                d.bera_prediksi !== null ||
-                d.olah_real !== null ||
-                d.olah_prediksi !== null ||
-                d.tanam_real !== null ||
-                d.tanam_prediksi !== null
-            );
+            // Cek minimal satu kolom numerik valid (bukan null/NaN)
+            return [
+                d.panen_real,
+                d.panen_prediksi,
+                d.bera_real,
+                d.bera_prediksi,
+                d.olah_real,
+                d.olah_prediksi,
+                d.tanam_real,
+                d.tanam_prediksi
+            ].some(v => typeof v === 'number' && !isNaN(v));
         });
     }
     // Event listener tombol kirim ke Supabase
