@@ -7,20 +7,37 @@
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length < 11) return;
+            // Helper: konversi string ke number/null
+            function parseNum(val) {
+                if (val === undefined || val === null) return null;
+                val = val.trim();
+                if (val === '-' || val === '') return null;
+                const num = parseFloat(val.replace(/,/g, '.'));
+                return isNaN(num) ? null : num;
+            }
+            // Helper: validasi tanggal
+            function parseDate(val) {
+                if (!val) return null;
+                val = val.trim();
+                // Format YYYY-MM-DD
+                if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+                return null;
+            }
             data.push({
-                tanggal: cells[0].innerText.trim(),
-                panen_real: cells[1].innerText.trim(),
-                panen_prediksi: cells[2].innerText.trim(),
-                bera_real: cells[3].innerText.trim(),
-                bera_prediksi: cells[4].innerText.trim(),
-                olah_real: cells[5].innerText.trim(),
-                olah_prediksi: cells[6].innerText.trim(),
-                tanam_real: cells[7].innerText.trim(),
-                tanam_prediksi: cells[8].innerText.trim(),
-                keterangan: cells[9].innerText.trim()
+                tanggal: parseDate(cells[0].innerText),
+                panen_real: parseNum(cells[1].innerText),
+                panen_prediksi: parseNum(cells[2].innerText),
+                bera_real: parseNum(cells[3].innerText),
+                bera_prediksi: parseNum(cells[4].innerText),
+                olah_real: parseNum(cells[5].innerText),
+                olah_prediksi: parseNum(cells[6].innerText),
+                tanam_real: parseNum(cells[7].innerText),
+                tanam_prediksi: parseNum(cells[8].innerText),
+                keterangan: (cells[9].innerText && cells[9].innerText.trim() !== '-') ? cells[9].innerText.trim() : null
             });
         });
-        return data;
+        // Filter hanya data dengan tanggal valid
+        return data.filter(d => d.tanggal);
     }
     // Event listener tombol kirim ke Supabase
     document.addEventListener('DOMContentLoaded', function() {
