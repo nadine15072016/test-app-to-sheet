@@ -27,7 +27,8 @@
                 if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
                 return null;
             }
-            data.push({
+            // Hanya ambil field yang sesuai skema Supabase
+            const obj = {
                 tanggal: parseDate(cells[0].innerText),
                 panen_real: parseNum(cells[1].innerText),
                 panen_prediksi: parseNum(cells[2].innerText),
@@ -38,9 +39,11 @@
                 tanam_real: parseNum(cells[7].innerText),
                 tanam_prediksi: parseNum(cells[8].innerText),
                 keterangan: (cells[9].innerText && cells[9].innerText.trim() !== '-') ? cells[9].innerText.trim() : null
-            });
+            };
+            // Pastikan tidak ada undefined
+            Object.keys(obj).forEach(k => { if (obj[k] === undefined) obj[k] = null; });
+            data.push(obj);
         });
-        // Filter hanya data dengan tanggal valid
         // Hanya kirim baris dengan tanggal valid dan minimal satu nilai numerik (null/NaN diabaikan, 0 valid)
         return data.filter(d => {
             if (!d.tanggal) return false;
@@ -57,17 +60,6 @@
             ].some(v => typeof v === 'number' && !isNaN(v));
         });
     }
-    // Event listener tombol kirim ke Supabase
-    document.addEventListener('DOMContentLoaded', function() {
-        const btn = document.getElementById('sendSupabaseBtn');
-        if (btn) {
-            btn.addEventListener('click', function() {
-                const data = getTableData();
-                // Panggil fungsi kirim ke Supabase di sini
-                sendToSupabase(data);
-            });
-        }
-    });
     // Fungsi placeholder kirim ke Supabase
     function sendToSupabase(data) {
         const url = 'https://rvibhulolxrbhdmjtuxk.supabase.co/rest/v1/laporan_padi_sawah';
@@ -3680,36 +3672,5 @@ document.addEventListener('DOMContentLoaded', function(){
         setInterval(updateDateTime, 1000);
         updateDateTime();
     </script>
-<script>
-const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzzAYNfCIVHesJIEwfj8amkEKP1OrUoqWdf5-uPcmNfTIBgWLVksYByFPne63x8woLb/exec'; // Ganti dengan URL Web Apps Anda
-
-function sendRowToGoogleSheets(row) {
-    const cells = row.querySelectorAll('td');
-    let data = {
-        tanggal: cells[0]?.innerText || '',
-        panen_real: cells[1]?.innerText || '',
-        panen_prediksi: cells[2]?.innerText || '',
-        bera_real: cells[3]?.innerText || '',
-        bera_prediksi: cells[4]?.innerText || '',
-        olah_real: cells[5]?.innerText || '',
-        olah_prediksi: cells[6]?.innerText || '',
-        tanam_real: cells[7]?.innerText || '',
-        tanam_prediksi: cells[8]?.innerText || '',
-        keterangan: cells[9]?.innerText || ''
-    };
-    fetch(GOOGLE_SHEETS_URL, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.json())
-    .then(response => {
-        console.log('Data berhasil dikirim:', response);
-    })
-    .catch(err => {
-        console.error('Gagal mengirim data:', err);
-    });
-}
-</script>
 </body>
 </html>
