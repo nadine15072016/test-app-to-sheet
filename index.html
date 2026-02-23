@@ -11,10 +11,13 @@
             function parseNum(val) {
                 if (val === undefined || val === null) return null;
                 val = String(val).trim();
-                // Jika mengandung karakter selain angka, titik, minus di depan, atau kosong, return null
-                if (val === '' || val === '-' || !/^(-?\d+(\.\d+)?)$/.test(val)) return null;
-                const num = parseFloat(val.replace(/,/g, '.'));
-                return isNaN(num) ? null : num;
+                if (val === '' || val === '-') return null;
+                // Izinkan angka 0, 0.00, dst
+                if (/^-?\d+(\.\d+)?$/.test(val)) {
+                    const num = parseFloat(val.replace(/,/g, '.'));
+                    return isNaN(num) ? null : num;
+                }
+                return null;
             }
             // Helper: validasi tanggal
             function parseDate(val) {
