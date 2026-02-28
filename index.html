@@ -1,6 +1,7 @@
 <script>
 // ... IndexedDB utility sebelumnya ...
 function getAllSurvey() {
+    // ...existing code...
     return openDB().then(db => {
         return new Promise((resolve, reject) => {
             const tx = db.transaction(STORE_NAME, 'readonly');
@@ -70,6 +71,21 @@ function addSurvey(data) {
             color: #253a2a !important;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
+            /* Gaya khusus untuk waktu dan tanggal realtime */
+            #datetime {
+                background: linear-gradient(90deg, #e7ece7 70%, #b7c9a3 100%);
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(60,120,60,0.07);
+                padding: 8px 18px;
+                font-size: 1.15em;
+                font-weight: 600;
+                color: #2e7d32;
+                letter-spacing: 0.5px;
+                margin-bottom: 18px;
+                text-align: right;
+                border: 1px solid #a3a97a;
+                display: block;
+            }
         .container {
             background: linear-gradient(135deg, #e7ece7 70%, #b7c9a3 100%) !important;
             box-shadow: 0 6px 32px rgba(60,120,60,0.08) !important;
@@ -397,7 +413,28 @@ function addSurvey(data) {
 </head>
 <body>
     <div class="container">
-        <!-- lokasi-error dihapus, tidak ada popup error lokasi -->
+    <!-- Tombol Home -->
+    <div style="position: fixed; top: 20px; left: 20px; z-index: 9999;">
+        <a href="https://nadine15072016.github.io/Ghostscript1/" target="_blank" style="text-decoration: none;">
+            <button style="padding: 10px 20px; font-size: 16px; background: #1976d2; color: white; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+                Home
+            </button>
+        </a>
+    </div>
+                <!-- lokasi-error dihapus, tidak ada popup error lokasi -->
+                <!-- Waktu dan Tanggal Realtime -->
+                <div id="datetime" style="font-size:1.1em;font-weight:600;color:#2e7d32;margin-bottom:12px;text-align:right;"></div>
+                <script>
+                    function updateDateTime() {
+                        const now = new Date();
+                        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        const dateStr = now.toLocaleDateString('id-ID', options);
+                        const timeStr = now.toLocaleTimeString('id-ID');
+                        document.getElementById('datetime').textContent = `${dateStr} | ${timeStr}`;
+                    }
+                    setInterval(updateDateTime, 1000);
+                    updateDateTime();
+                </script>
         <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;">
             <h1 style="margin:0;font-size:1.7rem;color:#2e7d32;letter-spacing:0.5px;">Peta Lokasi</h1>
             <input type="text" id="filter-utama" placeholder="Cari lokasi/kegiatan..." style="display:none;padding:8px;border-radius:6px;border:1px solid #bbb;width:220px;">
